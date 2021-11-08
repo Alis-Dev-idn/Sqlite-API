@@ -1,20 +1,31 @@
 const {Sequelize, DataTypes} = require('sequelize');
+const readline = require('readline').createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
 
 //variable setup
 let sqlite;
 let Id;
+let ManyData;
 
-main();
+readline.question('How many data to input? ', amount => {
+    main(amount);
+    readline.close();
+});
 
 //main program
-async function main(){
+async function main(AmountData){
   await database();
-    for (let j = 0; j < 100; j++) {
+  let data = await findData();
+  let sum = data + parseInt(AmountData);
+    for (let j = 0; j < sum; j++) {
         let data = {}
         data['localId'] = j;
         data['localName'] = `WaterSensor-${j}`;
-        await dataCek(data);
+        await CekData(data).catch(err => {console.log('message: '+ err)});
     }
+    console.log('Done!')
 }
 
 //database settings
@@ -24,7 +35,7 @@ async function database(){
         host: `local.db`,
         logging: false
     })
-    sqlite.sync().then(() => {console.log('Sqlite Is Ready!')}).catch(err => {console.log(err)});
+    sqlite.sync().then(() => {console.log('Please Wait ...')}).catch(err => {console.log(err)});
 
     //database models
     Id = sqlite.define('local-db',{
@@ -42,11 +53,22 @@ async function database(){
     Id.removeAttribute('id');
 }
 
-//cek data didalam
-async function dataCek(sensor){
-    const data = await Id.findOne({where: sensor});
-    if(data) return console.log('data is found, not input to database!');
-    await sendData(sensor).then(respon =>{console.log('success')}).catch(err => {console.log(err)});
+//cek value data in database
+async function findData(){
+    ManyData = 0;
+    const data = await Id.findAll();
+    for (let i = 0; i < data.length; i++) {
+        ManyData++
+    }
+    console.log('find '+ ManyData + ' data in data base');
+    return ManyData;
+}
+
+//cek value id use or no
+async function CekData(sensor){
+    const data = await Id.findOne({where: sensor})
+    if(data) return;
+    await sendData(sensor).catch(err => {console.log('message: '+ err)});
 }
 
 //input to database

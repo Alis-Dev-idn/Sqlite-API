@@ -7,8 +7,7 @@ async function createData(id, name){
         localName: name
     }).then(data => {
         a = data;
-    }).catch(err => {console.log(err)})
-    console.log(a);
+    }).catch(err => {a = err})
     return a;
 }
 
