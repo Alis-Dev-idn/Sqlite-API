@@ -8,17 +8,20 @@ const readline = require('readline').createInterface({
 let sqlite;
 let Id;
 let ManyData;
+let GetAmountData;
 
-readline.question('How many data to input? ', amount => {
-    main(amount);
-    readline.close();
-});
+main();
 
 //main program
-async function main(AmountData){
+async function main(){
   await database();
-  let data = await findData();
-  let sum = data + parseInt(AmountData);
+  GetAmountData = await findData();
+}
+
+//generate data
+async function GenerateData(AmountData){
+    let sum = GetAmountData + parseInt(AmountData);
+    console.log('input data, please wait ...')
     for (let j = 0; j < sum; j++) {
         let data = {}
         data['localId'] = j;
@@ -35,7 +38,12 @@ async function database(){
         host: `local.db`,
         logging: false
     })
-    sqlite.sync().then(() => {console.log('Please Wait ...')}).catch(err => {console.log(err)});
+    sqlite.sync().then(response => {
+        readline.question('How many data to add? ', amount => {
+            if(amount) return GenerateData(amount), readline.close();
+            readline.close();
+        });
+    }).catch(err => {console.log(err)});
 
     //database models
     Id = sqlite.define('local-db',{
